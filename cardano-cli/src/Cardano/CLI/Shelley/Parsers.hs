@@ -26,6 +26,7 @@ import           Cardano.CLI.Shelley.Key (InputFormat (..), PaymentVerifier (..)
                    StakeVerifier (..), VerificationKeyOrFile (..), VerificationKeyOrHashOrFile (..),
                    VerificationKeyTextOrFile (..), deserialiseInput, renderInputDecodeError)
 import           Cardano.CLI.Types
+
 import           Control.Monad.Fail (fail)
 import           Data.Attoparsec.Combinator ((<?>))
 import           Data.Time.Clock (UTCTime)
@@ -513,7 +514,6 @@ pTransaction =
                                  <*> many pCertificateFile
                                  <*> many pWithdrawal
                                  <*> pTxMetadataJsonSchema
-                                 <*> many pScript
                                  <*> many pMetadataFile
                                  <*> optional pUpdateProposalFile
                                  <*> pTxBodyFile Output
@@ -1055,23 +1055,26 @@ pProtocolParamsFile =
       <> Opt.completer (Opt.bashCompleter "file")
       )
 
-pCertificateFile :: Parser CertificateFile
+pCertificateFile :: Parser (CertificateFile, Maybe ScriptFile)
 pCertificateFile =
-  CertificateFile <$>
-    (  Opt.strOption
-         (  Opt.long "certificate-file"
-         <> Opt.metavar "FILE"
-         <> Opt.help "Filepath of the certificate. This encompasses all \
-                     \types of certificates (stake pool certificates, \
-                     \stake key certificates etc)"
-         <> Opt.completer (Opt.bashCompleter "file")
-         )
-    <|>
-       Opt.strOption
-         (  Opt.long "certificate"
-         <> Opt.internal
-         )
-    )
+       Opt.subparser
+         (   Opt.command "certificate-file" (Opt.info cert $ Opt.progDesc helpText)
+          <> Opt.metavar "certificate-file")
+   <|> Opt.subparser (Opt.command "certificate" (Opt.info cert mempty) <> Opt.internal)
+
+ where
+   helpText = "Filepath of the certificate. This encompasses all \
+              \types of certificates (stake pool certificates, \
+              \stake key certificates etc). Optionally specify a script witness."
+   cert :: Parser (CertificateFile, Maybe ScriptFile)
+   cert =
+    (,) <$> CertificateFile
+              <$> Opt.strArgument
+                  (  Opt.metavar "CERTIFICATEFILE"
+                  <> Opt.help helpText
+                  <> Opt.completer (Opt.bashCompleter "file")
+                  )
+        <*> optional (pScriptFor "script-file" "Filepath of the certificate script witness")
 
 pPoolMetadataFile :: Parser PoolMetadataFile
 pPoolMetadataFile =
@@ -1126,19 +1129,33 @@ pMetadataFile =
           <> Opt.completer (Opt.bashCompleter "file")
           )
 
-pWithdrawal :: Parser (StakeAddress, Lovelace)
+pWithdrawal :: Parser (StakeAddress, Lovelace, Maybe ScriptFile)
 pWithdrawal =
-    Opt.option (readerFromAttoParser parseWithdrawal)
-      (  Opt.long "withdrawal"
-      <> Opt.metavar "WITHDRAWAL"
-      <> Opt.help "The reward withdrawal as StakeAddress+Lovelace where \
-                  \StakeAddress is the Bech32-encoded stake address \
-                  \followed by the amount in Lovelace."
-      )
-  where
-    parseWithdrawal :: Atto.Parser (StakeAddress, Lovelace)
-    parseWithdrawal =
-      (,) <$> parseStakeAddress <* Atto.char '+' <*> parseLovelace
+   Opt.hsubparser
+     $ (   Opt.command "withdrawal" . Opt.info withdrawal $ Opt.progDesc helpText)
+        <> Opt.metavar "withdrawal"
+ where
+   helpText = "The reward withdrawal as StakeAddress+Lovelace where \
+              \StakeAddress is the Bech32-encoded stake address \
+              \followed by the amount in Lovelace. Optionally specify \
+              \a script witness."
+   withdrawal :: Parser (StakeAddress, Lovelace, Maybe ScriptFile)
+   withdrawal =
+    toThruple
+      <$> Opt.argument (readerFromAttoParser parseWithdrawal)
+            (  Opt.metavar "WITHDRAWAL"
+            <> Opt.help helpText
+            )
+      <*> optional (pScriptFor "script-file" "Filepath of the withdrawal script witness.")
+
+   toThruple :: (StakeAddress, Lovelace)
+             -> Maybe ScriptFile
+             -> (StakeAddress, Lovelace, Maybe ScriptFile)
+   toThruple (sAddr,ll) mSf = (sAddr, ll, mSf)
+
+   parseWithdrawal :: Atto.Parser (StakeAddress, Lovelace)
+   parseWithdrawal =
+     (,) <$> parseStakeAddress <* Atto.char '+' <*> parseLovelace
 
 
 pUpdateProposalFile :: Parser UpdateProposalFile
@@ -1189,8 +1206,6 @@ pSomeWitnessSigningData =
           )
         <*>
           optional pByronAddress
-    <|>
-      ScriptWitnessSigningData <$> pScript
 
 pSigningKeyFile :: FileDirection -> Parser SigningKeyFile
 pSigningKeyFile fdir =
@@ -1216,8 +1231,6 @@ pWitnessSigningData =
         )
       <*>
         optional pByronAddress
-  <|>
-    ScriptWitnessSigningData <$> pScript
 
 pKesPeriod :: Parser KESPeriod
 pKesPeriod =
@@ -1574,13 +1587,22 @@ pCardanoEra = asum
   , pure (AnyCardanoEra MaryEra)
   ]
 
-pTxIn :: Parser TxIn
+pTxIn :: Parser (TxIn, Maybe ScriptFile)
 pTxIn =
-  Opt.option (readerFromAttoParser parseTxIn)
-    (  Opt.long "tx-in"
-    <> Opt.metavar "TX-IN"
-    <> Opt.help "The input transaction as TxId#TxIx where TxId is the transaction hash and TxIx is the index."
-    )
+   Opt.hsubparser
+     $ (Opt.command "tx-in" . Opt.info txIn $ Opt.progDesc helpText) <> Opt.metavar "tx-in"
+ where
+   helpText = "The input transaction(s) as TxId#TxIx where TxId \
+              \is the transaction hash and TxIx is the index. \
+              \ Optionally specify a script witness."
+
+   txIn :: Parser (TxIn, Maybe ScriptFile )
+   txIn =
+     (,) <$> Opt.argument (readerFromAttoParser parseTxIn)
+               (  Opt.metavar "TX-IN"
+               <> Opt.help "TxId#TxIx"
+               )
+         <*> optional (pScriptFor "script-file" "Filepath of the spending script witness")
 
 parseTxIn :: Atto.Parser TxIn
 parseTxIn = TxIn <$> parseTxId <*> (Atto.char '#' *> parseTxIx)
@@ -1615,14 +1637,20 @@ pTxOut =
                   \Lovelace."
       )
 
-pMintMultiAsset :: Parser Value
+pMintMultiAsset :: Parser (Value, [ScriptFile])
 pMintMultiAsset =
-  Opt.option
-    (readerFromParsecParser parseValue)
-      (  Opt.long "mint"
-      <> Opt.metavar "VALUE"
-      <> Opt.help "Mint multi-asset value(s) with the multi-asset cli syntax"
-      )
+   Opt.hsubparser
+     $ (Opt.command "mint" . Opt.info mint $ Opt.progDesc helpText) <> Opt.metavar "mint"
+ where
+   helpText = "Mint multi-asset value(s) with the multi-asset cli syntax. \
+               \Optionally specifiy a script witness."
+   mint =
+    (,) <$> Opt.argument
+              (readerFromParsecParser parseValue)
+                (  Opt.metavar "VALUE"
+                <> Opt.help helpText
+                )
+        <*> some (pScriptFor "script-file" "Filepath of the multi-asset witness script.")
 
 pInvalidBefore :: Parser SlotNo
 pInvalidBefore =

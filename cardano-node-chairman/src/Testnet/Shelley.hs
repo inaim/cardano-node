@@ -323,7 +323,7 @@ testnet testnetOptions H.Conf {..} = do
     --  2. register the stake pool n
     --  3. register the usern stake address
     --  4. delegate from the usern stake address to the stake pool
-    genesisTxinResult <- H.noteShowM $ S.strip <$> H.execCli
+    _genesisTxinResult <- H.noteShowM $ S.strip <$> H.execCli
       [ "genesis", "initial-txin"
       , "--testnet-magic", show @Int testnetMagic
       , "--verification-key-file", tempAbsPath </> "utxo-keys/utxo" <> n <> ".vkey"
@@ -335,12 +335,12 @@ testnet testnetOptions H.Conf {..} = do
       [ "transaction", "build-raw"
       , "--invalid-hereafter", "1000"
       , "--fee", "0"
-      , "--tx-in", genesisTxinResult
+      , "tx-in", "91999ea21177b33ebe6b8690724a0c026d410a11ad7521caa350abdafa5394c3#0"
       , "--tx-out", userNAddr <> "+" <> show @Integer (maxLovelaceSupply testnetOptions)
-      , "--certificate-file", tempAbsPath </> "addresses/pool-owner" <> n <> "-stake.reg.cert"
-      , "--certificate-file", tempAbsPath </> "node-pool" <> n <> "/registration.cert"
-      , "--certificate-file", tempAbsPath </> "addresses/user" <> n <> "-stake.reg.cert"
-      , "--certificate-file", tempAbsPath </> "addresses/user" <> n <> "-stake.deleg.cert"
+      , "certificate-file", tempAbsPath </> "addresses/pool-owner" <> n <> "-stake.reg.cert"
+      , "certificate-file", tempAbsPath </> "node-pool" <> n <> "/registration.cert"
+      , "certificate-file", tempAbsPath </> "addresses/user" <> n <> "-stake.reg.cert"
+      , "certificate-file", tempAbsPath </> "addresses/user" <> n <> "-stake.deleg.cert"
       , "--out-file", tempAbsPath </> "tx" <> n <> ".txbody"
       ]
 

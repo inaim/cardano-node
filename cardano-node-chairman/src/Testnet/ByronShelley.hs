@@ -527,12 +527,12 @@ testnet testnetOptions H.Conf {..} = do
       [ "transaction", "build-raw"
       , "--invalid-hereafter", "1000"
       , "--fee", "0"
-      , "--tx-in", txIn
+      , "tx-in", txIn
       , "--tx-out",  user1Addr <> "+" <> show @Int maxSupply
-      , "--certificate-file", tempAbsPath </> "addresses/pool-owner1-stake.reg.cert"
-      , "--certificate-file", tempAbsPath </> "node-pool1/registration.cert"
-      , "--certificate-file", tempAbsPath </> "addresses/user1-stake.reg.cert"
-      , "--certificate-file", tempAbsPath </> "addresses/user1-stake.deleg.cert"
+      , "certificate-file", tempAbsPath </> "addresses/pool-owner1-stake.reg.cert"
+      , "certificate-file", tempAbsPath </> "node-pool1/registration.cert"
+      , "certificate-file", tempAbsPath </> "addresses/user1-stake.reg.cert"
+      , "certificate-file", tempAbsPath </> "addresses/user1-stake.deleg.cert"
       , "--out-file", tempAbsPath </> "tx1.txbody"
       ]
 

@@ -1012,7 +1012,7 @@ deserialiseShelleyBasedTxBody mkTxBody bs =
       return $ CBOR.Annotator $ \fbs ->
         mkTxBody
           (CBOR.runAnnotator txbody fbs)
-          (map (flip CBOR.runAnnotator fbs) txscripts)
+          (map (`CBOR.runAnnotator` fbs) txscripts)
           (CBOR.runAnnotator <$> txmetadata <*> pure fbs)
 
 instance IsCardanoEra era => HasTextEnvelope (TxBody era) where
@@ -1329,16 +1329,17 @@ collectTxBodySimpleScripts TxBodyContent {
     , (_, _, BuildTxWith witness) <- withdrawals
     , script <- simpleScriptInEra witness ]
 
- ++ [ script
-    | TxCertificates _ _ (BuildTxWith witnesses) <- [txCertificates]
-    , witness <- Map.elems witnesses
-    , script <- simpleScriptInEra witness ]
+ ++ do TxCertificates _ _ (BuildTxWith witnesses) <- [txCertificates]
+       getScripts witnesses
 
- ++ [ script
-    | TxMintValue _ _ (BuildTxWith witnesses) <- [txMintValue]
-    , witness <- Map.elems witnesses
-    , script <- simpleScriptInEra witness ]
+ ++ do TxMintValue _ _ (BuildTxWith witnesses) <- [txMintValue]
+       getScripts witnesses
   where
+    getScripts :: Map k (Witness witctx era) -> [SimpleScriptInEra era]
+    getScripts witnesses = do
+      witness <- Map.elems witnesses
+      simpleScriptInEra witness
+
     simpleScriptInEra :: Witness witctx era -> [SimpleScriptInEra era]
     simpleScriptInEra (ScriptWitness
                          _ (SimpleScriptWitness langInEra version script)) =
