@@ -31,7 +31,7 @@ golden_view_shelley =
       execCardanoCLI
         [ "transaction", "build-raw"
         , "--shelley-era"
-        , "--tx-in"
+        , "tx-in"
         ,   "fe5dd07fb576bff960d6e066eade5b26cdb5afebe29f76ea58d0a098bce5d891\
             \#29"
         , "--tx-out"
@@ -79,7 +79,7 @@ golden_view_allegra =
       execCardanoCLI
         [ "transaction", "build-raw"
         , "--allegra-era"
-        , "--tx-in"
+        , "tx-in"
         ,   "fe5dd07fb576bff960d6e066eade5b26cdb5afebe29f76ea58d0a098bce5d891\
             \#94"
         , "--tx-out"
@@ -131,7 +131,7 @@ golden_view_mary =
       execCardanoCLI
         [ "transaction", "build-raw"
         , "--mary-era"
-        , "--tx-in"
+        , "tx-in"
         ,   "fe5dd07fb576bff960d6e066eade5b26cdb5afebe29f76ea58d0a098bce5d891\
             \#135"
         , "--tx-out"

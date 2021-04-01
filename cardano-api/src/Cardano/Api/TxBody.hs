@@ -91,7 +91,7 @@ module Cardano.Api.TxBody (
     fromTxOut,
 
     -- * Data family instances
-    AsType(AsTxId, AsTxBody, AsByronTxBody, AsShelleyTxBody),
+    AsType(AsTxId, AsTxBody, AsByronTxBody, AsShelleyTxBody, AsMaryTxBody),
 
     -- * Conversion functions
     fromByronTxIn,
@@ -944,6 +944,9 @@ pattern AsShelleyTxBody :: AsType (TxBody ShelleyEra)
 pattern AsShelleyTxBody = AsTxBody AsShelleyEra
 {-# COMPLETE AsShelleyTxBody #-}
 
+pattern AsMaryTxBody :: AsType (TxBody MaryEra)
+pattern AsMaryTxBody = AsTxBody AsMaryEra
+{-# COMPLETE AsMaryTxBody #-}
 
 instance IsCardanoEra era => SerialiseAsCBOR (TxBody era) where
 

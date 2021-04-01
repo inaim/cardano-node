@@ -25,14 +25,12 @@ golden_shelleyTransactionBuild = propertyOnce $ H.moduleWorkspace "tmp" $ \tempD
 
   void $ execCardanoCLI
     [ "transaction","build-raw"
-    , "--shelley-era"
-    , "--tx-in", txIn
+    , "tx-in", txIn
     , "--tx-out", txOut
-    , "--invalid-hereafter", "60"
     , "--fee", "12"
     , "--tx-body-file", txBodyOutFile
     ]
 
-  H.assertFileOccurences 1 "TxUnsignedShelley" txBodyOutFile
+  H.assertFileOccurences 1 "TxBodyMary" txBodyOutFile
 
   H.assertEndsWithSingleNewline txBodyOutFile
