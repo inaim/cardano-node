@@ -43,6 +43,7 @@ type TraceChainSyncProtocol = ("TraceChainSyncProtocol" :: Symbol)
 type TraceConnectionManager = ("TraceConnectionManager" :: Symbol)
 type DebugPeerSelectionInitiator = ("DebugPeerSelectionInitiator" :: Symbol)
 type DebugPeerSelectionInitiatorResponder = ("DebugPeerSelectionInitiatorResponder" :: Symbol)
+type TracePeerSelectionCounters = ("TracePeerSelectionCounters" :: Symbol)
 type TraceDiffusionInitialization = ("TraceDiffusionInitialization" :: Symbol)
 type TraceDnsResolver = ("TraceDnsResolver" :: Symbol)
 type TraceForge = ("TraceForge" :: Symbol)
@@ -99,6 +100,7 @@ data TraceSelection
   , traceConnectionManager :: OnOff TraceConnectionManager
   , traceDebugPeerSelectionInitiatorTracer :: OnOff DebugPeerSelectionInitiator
   , traceDebugPeerSelectionInitiatorResponderTracer :: OnOff DebugPeerSelectionInitiatorResponder
+  , tracePeerSelectionCounters :: OnOff TracePeerSelectionCounters
   , traceDiffusionInitialization :: OnOff TraceDiffusionInitialization
   , traceDnsResolver :: OnOff TraceDnsResolver
   , traceForge :: OnOff TraceForge
@@ -161,6 +163,8 @@ traceConfigParser v =
       debugPeerSelectionInitiator = OnOff False
       debugPeerSelectionInitiatorResponder :: OnOff DebugPeerSelectionInitiatorResponder
       debugPeerSelectionInitiatorResponder = OnOff False
+      tracePeerSelectionCounters :: OnOff TracePeerSelectionCounters
+      tracePeerSelectionCounters = OnOff False
       diffusionInitialization :: OnOff TraceDiffusionInitialization
       diffusionInitialization = OnOff False
       dnsResolver :: OnOff TraceDnsResolver
@@ -233,6 +237,8 @@ traceConfigParser v =
                        .!= debugPeerSelectionInitiator
     <*> v .:? getName debugPeerSelectionInitiatorResponder
                        .!= debugPeerSelectionInitiatorResponder
+    <*> v .:? getName tracePeerSelectionCounters
+                       .!= tracePeerSelectionCounters
     <*> v .:? getName diffusionInitialization .!= diffusionInitialization
     <*> v .:? getName dnsResolver .!= dnsResolver
     <*> v .:? getName forge .!= forge
