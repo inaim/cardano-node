@@ -163,8 +163,8 @@ traceConfigParser v =
       debugPeerSelectionInitiator = OnOff False
       debugPeerSelectionInitiatorResponder :: OnOff DebugPeerSelectionInitiatorResponder
       debugPeerSelectionInitiatorResponder = OnOff False
-      tracePeerSelectionCounters :: OnOff TracePeerSelectionCounters
-      tracePeerSelectionCounters = OnOff False
+      trPeerSelectionCounters :: OnOff TracePeerSelectionCounters
+      trPeerSelectionCounters = OnOff False
       diffusionInitialization :: OnOff TraceDiffusionInitialization
       diffusionInitialization = OnOff False
       dnsResolver :: OnOff TraceDnsResolver
@@ -237,8 +237,8 @@ traceConfigParser v =
                        .!= debugPeerSelectionInitiator
     <*> v .:? getName debugPeerSelectionInitiatorResponder
                        .!= debugPeerSelectionInitiatorResponder
-    <*> v .:? getName tracePeerSelectionCounters
-                       .!= tracePeerSelectionCounters
+    <*> v .:? getName trPeerSelectionCounters
+                       .!= trPeerSelectionCounters
     <*> v .:? getName diffusionInitialization .!= diffusionInitialization
     <*> v .:? getName dnsResolver .!= dnsResolver
     <*> v .:? getName forge .!= forge
