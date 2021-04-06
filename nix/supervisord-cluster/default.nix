@@ -13,20 +13,29 @@
 }:
 with lib;
 let
-  path = makeBinPath
-    [ bech32 pkgs.jq pkgs.gnused pkgs.coreutils pkgs.bash pkgs.moreutils ];
-
-  profilesJSON = pkgs.callPackage ./profiles.nix
-    { inherit
-      lib;
+  params =
+    {
+      inherit
+        basePort stateDir cacheDir
+        extraSupervisorConfig
+        useCabalRun
+        profileName
+        profileOverride;
     };
-  profiles = __fromJSON (__readFile profilesJSON);
 
-  profile = recursiveUpdate profiles."${__trace profileName profileName}" profileOverride;
+  ctlPkgs = pkgs.callPackage ./ctl { inherit lib; };
+in
+
+with ctlPkgs;
+let
+  profiles = pkgs.callPackage ./profiles { inherit ctl; };
+
+  profileJSON = profiles."${profileName}";
+  profile = recursiveUpdate
+              (__fromJSON (__readFile profileJSON))
+              profileOverride;
+
   inherit (profile) era composition monetary;
-
-  profileJSONFile = pkgs.writeText "profile-${profile.name}.json"
-    (__toJSON profile);
 
   topologyNixopsFile = "${stateDir}/topology-nixops.json";
   topology = pkgs.callPackage ./topology.nix
@@ -48,7 +57,7 @@ let
       cacheDir stateDir
       basePort
       profile
-      profileJSONFile;
+      profileJSON;
       topologyNixopsFile = "${stateDir}/topology-nixops.json";
     };
 
@@ -70,46 +79,43 @@ let
         extraSupervisorConfig;
     };
 
+  path = makeBinPath
+    [ bech32 ctl pkgs.jq pkgs.gnused pkgs.coreutils pkgs.bash pkgs.moreutils ];
+
   start = pkgs.writeScriptBin "start-cluster" ''
     set -euo pipefail
+
+    PATH=$PATH:${path}
 
     while test $# -gt 0
     do case "$1" in
         --trace | --debug ) set -x;;
         * ) break;; esac; shift; done
 
-    mkdir -p ${cacheDir}
+    ctl supervisor assert-stopped
 
-    if test "$(netstat -pltn 2>/dev/null | grep ':9001 ' | wc -l)" != "0"
-    then echo "Cluster already running. Please run 'stop-cluster' first!"
-         exit 1; fi
+    ctl profile describe ${profileName}
+
+    ${defCardanoExesBash}
+
+    rm -rf     ${stateDir}
+    mkdir -p ./${stateDir}/supervisor ${cacheDir}
+
+    # ctl topology
+    ${topology.mkTopologyBash}
+
+    ${mkGenesisBash}
 
     cat <<EOF
 Starting cluster:
   - state dir:       ${stateDir}
-  - topology:        ${topologyNixopsFile}, ${topology.topologyPdf}
+  - topology:        ${topologyNixopsFile}, ${stateDir}/topology.pdf
   - node port base:  ${toString basePort}
   - EKG URLs:        http://localhost:${toString (node-setups.nodeIndexToEkgPort 0)}/
   - Prometheus URLs: http://localhost:${toString (node-setups.nodeIndexToPrometheusPort 0)}/metrics
-  - profile JSON:    ${profileJSONFile}
+  - profile JSON:    ${profileJSON}
 
 EOF
-
-    ${pkgs.jq}/bin/jq '
-      include "profiles/derived" { search: "${./.}" };
-
-      profile_pretty_describe(.)
-      ' ${profileJSONFile} --raw-output
-
-    rm -rf     ${stateDir}
-    mkdir -p ./${stateDir}/supervisor
-
-    PATH=$PATH:${path}
-    ${defCardanoExesBash}
-
-    ${topology.mkTopologyBash}
-
-    ${mkGenesisBash}
 
     ${__concatStringsSep "\n"
       (flip mapAttrsToList node-setups.nodeSetups
@@ -175,4 +181,14 @@ EOF
     fi
   '';
 
-in { inherit stateDir start stop profilesJSON profile; }
+in
+{
+  # Derivations:
+  inherit ctl;
+
+  # Tools:
+  inherit runCtl;
+
+  # Products:
+  inherit params profiles profile start stop;
+}

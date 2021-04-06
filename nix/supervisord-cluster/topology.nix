@@ -6,21 +6,6 @@
 , localPortBase
 }:
 with composition; with lib;
-let
-  # metadata = {
-  #   inherit benchmarkingProfileName benchmarkingProfile benchmarkingTopology;
-  # };
-  producers =  cfg.producers;
-
-  topologyNode = builtins.toFile "topology.yaml" (builtins.toJSON {
-    Producers =
-      map (n: {
-        addr = let a = n.addr or n; in if (nodes ? ${a}) then hostName a else a;
-        port = n.port or nodePort;
-        valency = n.valency or 1;
-      }) cfg.producers;
-  });
-in
 {
   ## TODO: derive from topology, instead of building a parallel structure.
   nodeSpecs = lib.listToAttrs
@@ -54,8 +39,6 @@ in
              isProducer = false;
              inherit i;
            }));
-
-  topologyPdf = "${stateDir}/topology.pdf";
 
   mkTopologyBash =
     ''

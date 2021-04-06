@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC1090,SC2046,SC2206,SC2207
+
+set -euo pipefail
+
+global_ctl_basedir=${global_ctl_basedir:-$(realpath "$(dirname "$0")")}
+global_ctl_runsdir=${global_ctl_runsdir:-$(realpath "$global_ctl_basedir/../../runs")}
+
+. "$global_ctl_basedir"/ctl-lib.sh
+. "$global_ctl_basedir"/ctl-profile.sh
+. "$global_ctl_basedir"/ctl-run.sh
+. "$global_ctl_basedir"/ctl-supervisor.sh
+. "$global_ctl_basedir"/ctl-topology.sh
+
+usage_main() {
+     __usage "OP" "Main OPs" <<EOF
+    profile    (p)        Benchmark profile operations.  Default subop is 'list'
+    run        (r)        Managing benchmark runs.  Default subop is 'list'
+    topology   (t)        Topology generation
+
+    supervisor (s)        Managing local cluster
+
+  Options:
+
+    --trace / --debug     set -x
+    --help                This short help.
+    --help-full           Extended help.
+EOF
+}
+
+usage_extra() {
+    cat >&2 <<EOF
+  Other OPs:
+
+    call ARGS..           Call internal functions with arguments.
+
+  Extra options:
+
+    --cls                 Clear screen, before acting further.
+    --runsdir DIR         Set the runs directory.  Defaults to $global_ctl_runsdir
+
+EOF
+}
+
+while test $# -gt 0
+do case "$1" in
+       --runsdir )
+           global_ctl_runsdir=$2; shift;;
+       --cls )
+           echo -en "\ec">&2;;
+       --trace | --debug )
+           set -x;;
+       --help )
+           usage_main; exit 1;;
+       --help-full | --help-all | --help-extra )
+           usage_main; usage_extra; exit 1;;
+       * ) break;; esac; shift; done
+
+main() {
+    local op=${1:?$(usage_main)}; shift
+
+    case "${op}" in
+        profile | profiles | prof | ps | p )
+            profile "$@";;
+        supervisor | sup | sv | s )
+            supervisor "$@";;
+        topology | topo | t )
+            topology "$@";;
+        run | runs | r )
+            run "$@";;
+        call )
+            "$@";;
+        * ) usage_main; exit 1;; esac
+}
+
+main "$@"

@@ -7,7 +7,7 @@
 , basePort
 ##
 , profile
-, profileJSONFile
+, profileJSON
 ## As derived from profile:
 , topologyNixopsFile
 }:
@@ -139,7 +139,7 @@ let
             mkdir -p "${path}"/node-keys/cold
 
             #### cold keys (do not copy to production system)
-            if   jqtest ".genesis.dense_pool_density > 1" ${profileJSONFile} &&
+            if   jqtest ".genesis.dense_pool_density > 1" ${profileJSON} &&
                  jqtest ".[\"$id\"]  > 1" <<<$ids_pool_map
             then ## Dense/bulk pool
                echo "genesis:  bulk pool $did -> node-$id"
@@ -265,7 +265,7 @@ let
     rm -f                                     ${stateDir}/shelley
     ln -s "$(realpath "$genesis_cache_path")" ${stateDir}/shelley
 
-    ${updateGenesisCacheEntry "${stateDir}/shelley/genesis.json" profileJSONFile}
+    ${updateGenesisCacheEntry "${stateDir}/shelley/genesis.json" profileJSON}
     '';
 
   updateGenesisCacheEntry =

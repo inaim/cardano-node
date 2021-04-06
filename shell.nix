@@ -43,6 +43,7 @@ let
       sqlite-interactive
       tmux
       pkgs.git
+      clusterCabal.ctl
     ]
     ## Local cluster not available on Darwin,
     ## because psmisc fails to build on Big Sur.
@@ -61,6 +62,11 @@ let
       ./scripts/cabal-inside-nix-shell.sh
 
       function atexit() {
+          ${lib.optionalString autoStartCluster ''
+          if ctl supervisor is-running;
+          then echo "Stopping cluster (because 'auto-start-cluster' implies this):"
+               stop-cluster
+          fi''}
           echo "Reverting 'cabal.project' to the index version.."
           ./scripts/cabal-inside-nix-shell.sh --restore
       }
