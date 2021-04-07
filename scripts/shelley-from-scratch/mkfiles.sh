@@ -282,14 +282,14 @@ echo "====================================================================="
 cardano-cli transaction build-raw \
     --invalid-hereafter 1000 \
     --fee 0 \
-    --tx-in $(cardano-cli genesis initial-txin \
+    tx-in $(cardano-cli genesis initial-txin \
                 --testnet-magic 42 \
                 --verification-key-file utxo-keys/utxo1.vkey) \
     --tx-out $(cat addresses/user1.addr)+${SUPPLY} \
-    --certificate-file addresses/pool-owner1-stake.reg.cert \
-    --certificate-file node-pool1/registration.cert \
-    --certificate-file addresses/user1-stake.reg.cert \
-    --certificate-file addresses/user1-stake.deleg.cert \
+    certificate-file addresses/pool-owner1-stake.reg.cert \
+    certificate-file node-pool1/registration.cert \
+    certificate-file addresses/user1-stake.reg.cert \
+    certificate-file addresses/user1-stake.deleg.cert \
     --out-file tx1.txbody
 
 # So we'll need to sign this with a bunch of keys:

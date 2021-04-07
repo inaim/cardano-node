@@ -44,8 +44,8 @@ cardano-cli governance create-update-proposal \
 cardano-cli transaction build-raw \
             --allegra-era \
             --fee 0 \
-            --tx-in $TXID2#0\
-            --tx-in $TXID2#1\
+            tx-in $TXID2#0\
+            tx-in $TXID2#1\
             --tx-out $(cat addresses/user1.addr)+$((${COINS_IN_INPUT} / 2)) \
             --tx-out $(cat addresses/user1.addr)+$((${COINS_IN_INPUT} / 2)) \
             --update-proposal-file update-proposal-mary \

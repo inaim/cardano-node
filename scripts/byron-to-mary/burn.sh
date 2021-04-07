@@ -23,9 +23,9 @@ POLICYID=$(cardano-cli transaction policyid --script-file ma/policy.script)
 cardano-cli transaction build-raw \
             --mary-era \
             --fee 0 \
-            --tx-in $TXID4#0 \
+            tx-in $TXID4#0 \
             --tx-out $(cat addresses/user1.addr)+$((${COINS_IN_INPUT} / 2)) \
-            --mint="-5 $POLICYID.couttscoin" \
+            mint="-5 $POLICYID.couttscoin" \
             --out-file tx5.txbody
 
 cardano-cli transaction sign \
