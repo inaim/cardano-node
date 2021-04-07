@@ -435,7 +435,7 @@ transaction body:
 cardano-cli transaction build-raw
     --invalid-hereafter 1000
     --fee 0
-    --tx-in utxoinput
+    tx-in utxoinput
     --tx-out "$(< script.addr) ${amount}"
     --out-file txbody
 ```
@@ -472,7 +472,7 @@ will be "guarded" by the script.
 cardano-cli transaction build-raw \
     --invalid-hereafter 1000 \
     --fee 0 \
-    --tx-in (txin of script address)
+    tx-in (txin of script address)
     --tx-out yourspecifiedtxout \
     --out-file spendScriptTxBody
 ```
@@ -602,7 +602,7 @@ cardano-cli transaction build-raw \
     --invalid-hereafter 1000 \
     --invalid-before 1000\
     --fee 0 \
-    --tx-in (txin of script address)
+    tx-in (txin of script address)
     --tx-out yourspecifiedtxout \
     --out-file spendScriptTxBody
 ```
@@ -637,7 +637,7 @@ cardano-cli transaction build-raw \
     --invalid-hereafter 1000 \
     --invalid-hereafter 3000\
     --fee 0 \
-    --tx-in (txin of script address)
+    tx-in (txin of script address)
     --tx-out yourspecifiedtxout \
     --out-file spendScriptTxBody
 ```

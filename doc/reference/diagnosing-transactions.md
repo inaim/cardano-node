@@ -7,7 +7,7 @@ This section outlines how to diagnose and solve some problems that you may encou
 
 ```$ cardano-cli transaction build-raw \
 --shelley-era \
---tx-in f5296e996940b1c81f781594293d423b4250a454f5832b0740a923f74460d34#1 \
+tx-in f5296e996940b1c81f781594293d423b4250a454f5832b0740a923f74460d34#1 \
 --tx-out $(cat payment2.addr)+100000000 \
 --tx-out $(cat payment.addr)+899832033 \
 --invalid-hereafter 335000 --fee 167965 \

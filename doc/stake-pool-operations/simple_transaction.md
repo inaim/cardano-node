@@ -40,7 +40,7 @@ Create a draft for the transaction and save it in tx.draft
 Note that for `--tx-in` we use the following syntax: `TxHash#TxIx` where `TxHash` is the transaction hash and `TxIx` is the index; for `--tx-out` we use: `TxOut+Lovelace` where `TxOut` is the hex encoded address followed by the amount in `Lovelace`. For the transaction draft --tx-out, --invalid-hereafter and --fee can be set to zero.
 
     cardano-cli transaction build-raw \
-    --tx-in 4e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99#4 \
+    tx-in 4e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99#4 \
     --tx-out $(cat payment2.addr)+0 \
     --tx-out $(cat payment.addr)+0 \
     --invalid-hereafter 0 \
@@ -102,7 +102,7 @@ Calculate your `invalid-hereafter`, for example:  26633911 + 200 slots = 2663411
 We write the transaction in a file, we will name it `tx.raw`.
 
     cardano-cli transaction build-raw \
-    --tx-in 4e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99#4 \
+    tx-in 4e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99#4 \
     --tx-out $(cat payment2.addr)+10000000 \
     --tx-out $(cat payment.addr)+9832035 \
     --invalid-hereafter 26634111 \

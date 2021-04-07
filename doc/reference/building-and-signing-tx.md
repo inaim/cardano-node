@@ -83,7 +83,7 @@ Therefore, if N = 200 slots
 This time we include all the paramenters:
 
     cardano-cli transaction build-raw \
-    --tx-in 4e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99#4 \
+    tx-in 4e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99#4 \
     --tx-out $(cat payment2.addr)+100000000 \
     --tx-out $(cat payment.addr)+999899832035 \
     --invalid-hereafter 26634111 \

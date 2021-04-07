@@ -16,12 +16,12 @@ Stake address needs to be registered on the blockchain to be useful. Registering
 For the transaction draft, --tx.out, --invalid-hereafter and --fee can be set to zero.
 
     cardano-cli transaction build-raw \
-    --tx-in b64ae44e1195b04663ab863b62337e626c65b0c9855a9fbb9ef4458f81a6f5ee#1 \
+    tx-in b64ae44e1195b04663ab863b62337e626c65b0c9855a9fbb9ef4458f81a6f5ee#1 \
     --tx-out $(cat payment.addr)+0 \
     --invalid-hereafter 0 \
     --fee 0 \
     --out-file tx.draft \
-    --certificate-file stake.cert
+    certificate-file stake.cert
 
 #### Calculate fees
 
@@ -67,12 +67,12 @@ Query the UTXO of the address that pays for the transaction and deposit:
 Build the transaction, this time include  --invalid-hereafter and --fee
 
     cardano-cli transaction build-raw \
-    --tx-in b64ae44e1195b04663ab863b62337e626c65b0c9855a9fbb9ef4458f81a6f5ee#1 \
+    tx-in b64ae44e1195b04663ab863b62337e626c65b0c9855a9fbb9ef4458f81a6f5ee#1 \
     --tx-out $(cat payment.addr)+997828515 \
     --invalid-hereafter 987654 \
     --fee 171485 \
     --out-file tx.raw \
-    --certificate-file stake.cert
+    certificate-file stake.cert
 
 Sign it:
 

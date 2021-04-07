@@ -55,12 +55,12 @@ Create the deregistration certificate and save it as `pool-deregistration.cert`:
 #### Draft the transaction
 
     cardano-cli transaction build-raw \
-    --tx-in <TxHash>#<TxIx> \
+    tx-in <TxHash>#<TxIx> \
     --tx-out $(cat payment.addr)+0 \
     --invalid-hereafter 0 \
     --fee 0 \
     --out-file tx.draft \
-    --certificate-file pool-deregistration.cert
+    certificate-file pool-deregistration.cert
 
 #### Calculate the fees:
 
@@ -99,12 +99,12 @@ We calculate our change:
 Build the raw transaction:
 
     cardano-cli transaction build-raw \
-    --tx-in 9db6cf...#0 \
+    tx-in 9db6cf...#0 \
     --tx-out $(cat payment.addr)+999999096457 \
     --invalid-hereafter 860000 \
     --fee 171309 \
     --out-file tx.raw \
-    --certificate-file pool-deregistration.cert
+    certificate-file pool-deregistration.cert
 
 **Sign it with both the payment signing key and the cold signing key
 (the first signature is necessary because we are spending funds from `payment.addr`,

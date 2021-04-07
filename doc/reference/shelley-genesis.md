@@ -1419,16 +1419,14 @@ to use the low level command to select the exact UTxO to spend.
 ```bash
 $ cardano-cli transaction build-raw
 Usage: cardano-cli transaction build-raw [--byron-era | --shelley-era |
-                                           --allegra-era | --mary-era]
-                                         (--tx-in TX-IN) [--tx-out TX-OUT]
-                                         [--mint VALUE] [--invalid-before SLOT]
+                                           --allegra-era | --mary-era] tx-in
+                                         [--tx-out TX-OUT] [mint]
+                                         [--invalid-before SLOT]
                                          [--invalid-hereafter SLOT]
-                                         [--fee LOVELACE]
-                                         [--certificate-file FILE]
-                                         [--withdrawal WITHDRAWAL]
+                                         [--fee LOVELACE] [certificate-file]
+                                         [withdrawal]
                                          [--json-metadata-no-schema |
                                            --json-metadata-detailed-schema]
-                                         [--script-file FILE]
                                          [--metadata-json-file FILE |
                                            --metadata-cbor-file FILE]
                                          [--update-proposal-file FILE]
@@ -1440,29 +1438,23 @@ Available options:
   --shelley-era            Specify the Shelley era
   --allegra-era            Specify the Allegra era
   --mary-era               Specify the Mary era (default)
+<<<<<<< HEAD
   --tx-in TX-IN            The input transaction as TxId#TxIx where TxId is the
                            transaction hash and TxIx is the index.
+=======
+>>>>>>> Update cardano-cli docs
   --tx-out TX-OUT          The transaction output as Address+Lovelace where
                            Address is the Bech32-encoded address followed by the
                            amount in Lovelace.
-  --mint VALUE             Mint multi-asset value(s) with the multi-asset cli
-                           syntax
   --invalid-before SLOT    Time that transaction is valid from (in slots).
   --invalid-hereafter SLOT Time that transaction is valid until (in slots).
   --fee LOVELACE           The fee amount in Lovelace.
-  --certificate-file FILE  Filepath of the certificate. This encompasses all
-                           types of certificates (stake pool certificates, stake
-                           key certificates etc)
-  --withdrawal WITHDRAWAL  The reward withdrawal as StakeAddress+Lovelace where
-                           StakeAddress is the Bech32-encoded stake address
-                           followed by the amount in Lovelace.
   --json-metadata-no-schema
                            Use the "no schema" conversion from JSON to tx
                            metadata.
   --json-metadata-detailed-schema
                            Use the "detailed schema" conversion from JSON to tx
                            metadata.
-  --script-file FILE       Filepath of the script.
   --metadata-json-file FILE
                            Filepath of the metadata file, in JSON format.
   --metadata-cbor-file FILE
@@ -1471,6 +1463,21 @@ Available options:
                            Filepath of the update proposal.
   --out-file FILE          Output filepath of the JSON TxBody.
   -h,--help                Show this help text
+
+Available commands:
+  tx-in                    The input transaction(s) as TxId#TxIx where TxId is
+                           the transaction hash and TxIx is the index.
+                           Optionally specify a script witness.
+  mint                     Mint multi-asset value(s) with the multi-asset cli
+                           syntax. Optionally specifiy a script witness.
+  certificate-file         Filepath of the certificate. This encompasses all
+                           types of certificates (stake pool certificates, stake
+                           key certificates etc). Optionally specify a script
+                           witness.
+  withdrawal               The reward withdrawal as StakeAddress+Lovelace where
+                           StakeAddress is the Bech32-encoded stake address
+                           followed by the amount in Lovelace. Optionally
+                           specify a script witness.
 ```
 
 Yes, this is a very inconvenient way to build transactions, but at least you'll
@@ -1503,7 +1510,7 @@ So we build the unsigned transaction and place it in `example/tx1.txbody`
 ```bash
 $ cardano-cli transaction build-raw \
     --shelley-era \
-    --tx-in  e727f95ad8eedf5153405f4f3eb6fb797aba94f8d4ca18b09918459fccb798b8#0 \
+    tx-in  e727f95ad8eedf5153405f4f3eb6fb797aba94f8d4ca18b09918459fccb798b8#0 \
     --tx-out addr_test1vzrqr58zm3un86sfeze6039gj8v406p3zt4su0qkemc5vyqrs09az+500000000 \
     --invalid-hereafter 3600 \
     --fee 0 \
