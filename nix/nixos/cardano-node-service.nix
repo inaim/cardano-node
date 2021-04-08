@@ -439,25 +439,6 @@ in {
             else [];
         description = ''RTS profiling options'';
       };
-
-      tracingVerbosity = mkOption {
-        type = types.str;
-        default = envConfig.tracingVerbosity;
-        description = ''verbosity level of structured representation of traced values.'';
-      };
-
-      protover-major = mkOption {
-        type = types.nullOr types.int;
-        default = null;
-      };
-      protover-minor = mkOption {
-        type = types.nullOr types.int;
-        default = null;
-      };
-      protover-alt = mkOption {
-        type = types.nullOr types.int;
-        default = null;
-      };
     };
   };
 
