@@ -7,39 +7,6 @@
 }:
 with composition; with lib;
 {
-  ## TODO: derive from topology, instead of building a parallel structure.
-  nodeSpecs = lib.listToAttrs
-    ((flip genList composition.n_bft_hosts)
-     (n: let i = n; in
-         lib.nameValuePair "node-${toString i}"
-           { name = "node-${toString i}";
-             kind = "bft";
-             port = localPortBase + i;
-             isProducer = true;
-             inherit i;
-           })
-       ++
-     (flip genList composition.n_pool_hosts)
-     (n: let i = n + composition.n_bft_hosts; in
-         lib.nameValuePair "node-${toString i}"
-           { name = "node-${toString i}";
-             kind = "pool";
-             port = localPortBase + i;
-             isProducer = true;
-             inherit i;
-           })
-       ++
-     (flip genList (if composition.with_observer
-                    then 1 else 0))
-     (n: let i = n + composition.n_bft_hosts + composition.n_pool_hosts; in
-         lib.nameValuePair "node-${toString i}"
-           { name = "node-${toString i}";
-             kind = "observer";
-             port = localPortBase + i;
-             isProducer = false;
-             inherit i;
-           }));
-
   mkTopologyBash =
     ''
   ## 0. Generate the overall topology, in the 'cardano-ops'/nixops style:

@@ -3,14 +3,14 @@
 
 set -euo pipefail
 
-global_ctl_basedir=${global_ctl_basedir:-$(realpath "$(dirname "$0")")}
-global_ctl_runsdir=${global_ctl_runsdir:-$(realpath "$global_ctl_basedir/../../runs")}
+global_basedir=${global_basedir:-$(realpath "$(dirname "$0")")}
+global_runsdir=${global_runsdir:-$(realpath "$global_basedir/../../runs")}
 
-. "$global_ctl_basedir"/ctl-lib.sh
-. "$global_ctl_basedir"/ctl-profile.sh
-. "$global_ctl_basedir"/ctl-run.sh
-. "$global_ctl_basedir"/ctl-supervisor.sh
-. "$global_ctl_basedir"/ctl-topology.sh
+. "$global_basedir"/lib.sh
+. "$global_basedir"/profile.sh
+. "$global_basedir"/run.sh
+. "$global_basedir"/supervisor.sh
+. "$global_basedir"/topology.sh
 
 usage_main() {
      __usage "OP" "Main OPs" <<EOF
@@ -37,7 +37,7 @@ usage_extra() {
   Extra options:
 
     --cls                 Clear screen, before acting further.
-    --runsdir DIR         Set the runs directory.  Defaults to $global_ctl_runsdir
+    --runsdir DIR         Set the runs directory.  Defaults to $global_runsdir
 
 EOF
 }
@@ -45,7 +45,7 @@ EOF
 while test $# -gt 0
 do case "$1" in
        --runsdir )
-           global_ctl_runsdir=$2; shift;;
+           global_runsdir=$2; shift;;
        --cls )
            echo -en "\ec">&2;;
        --trace | --debug )

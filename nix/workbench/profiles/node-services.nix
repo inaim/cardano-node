@@ -1,14 +1,17 @@
 { pkgs
-, lib
-, stateDir
-, basePort
-, nodeSpecs                ## :: Map NodeName NodeSpec
+
+## The backend is an attrset of AWS/supervisord-specific methods and parameters.
+, backend
+
+## Environmental settings:
+##   - either affect semantics on all backends equally,
+##   - or have no semantic effect
+, environment
+
 , profile
-, useCabalRun
-, defaultLogConfig
 }:
 
-with lib;
+with pkgs.lib;
 
 let
 
@@ -25,24 +28,17 @@ let
   ## nodeSpecServiceConfig :: NodeSpec -> ServiceConfig
   ##
   nodeSpecServiceConfig =
-    { name, i, kind, port, isProducer }:
-    {
-      stateDir       = stateDir + "/${name}";
-      socketPath     = "node.socket";
-      topology       = "topology.json";
-      nodeConfigFile = "config.json";
-      dbPrefix       = "db";
-      port           = nodeIndexToNodePort i;
+    { name, i, kind, port, isProducer }@nodeSpec:
+
+    backend.finaliseNodeService nodeSpec
+    ({
+      inherit port;
       nodeConfig =
-        lib.recursiveUpdate defaultLogConfig
+       backend.finaliseNodeConfig nodeSpec
+        (recursiveUpdate environment.cardanoLib.environments.testnet
           ({
             Protocol             = "Cardano";
             RequiresNetworkMagic = "RequiresMagic";
-            ShelleyGenesisFile   = "../shelley/genesis.json";
-            ByronGenesisFile     =   "../byron/genesis.json";
-
-            hasEKG           = nodeIndexToEkgPort i;
-            hasPrometheus    = [ "127.0.0.1" (nodeIndexToPrometheusPort i) ];
 
             TracingVerbosity = "NormalVerbosity";
             minSeverity      = "Debug";
@@ -82,18 +78,8 @@ let
                 TestAllegraHardForkAtEpoch = 0;
                 TestMaryHardForkAtEpoch    = 0;
               };
-          }).${profile.era});
-    } // optionalAttrs isProducer {
-      operationalCertificate = "../shelley/node-keys/node${toString i}.opcert";
-      kesKey                 = "../shelley/node-keys/node-kes${toString i}.skey";
-      vrfKey                 = "../shelley/node-keys/node-vrf${toString i}.skey";
-    } // optionalAttrs useCabalRun {
-      executable = "cabal run exe:cardano-node --";
-    };
-
-  nodeIndexToNodePort       = i: basePort +   0 + i;
-  nodeIndexToEkgPort        = i: basePort + 100 + i;
-  nodeIndexToPrometheusPort = i: basePort + 200 + i;
+          }).${profile.value.era}));
+    });
 
   ## Given an env config, evaluate it and produce the node service.
   ## Call the given function on this service.
@@ -117,35 +103,64 @@ let
       };
     in evalModules {
       prefix = [];
-      modules = import ../nixos/module-list.nix ++ [ systemdCompat extra ];
+      modules = import ../../nixos/module-list.nix ++ [ systemdCompat extra ];
       args = { inherit pkgs; };
     };
     in eval.config.services.cardano-node;
 
+  inherit (pkgs) runJq;
+
   ##
-  ## nodeSetups :: Map NodeName (NodeSpec, NodeConfig, ServiceConfig, Script)
+  ## node-services :: Map NodeName (NodeSpec, ServiceConfig, Service, NodeConfig, Script)
   ##
-  nodeSetups = mapAttrs
-    (_: nodeSpec:
+  node-services = mapAttrs
+    (_: { name, ...}@nodeSpec:
       let
-        nodeServiceConfig = nodeSpecServiceConfig nodeSpec;
-        nodeService = nodeServiceConfigService nodeServiceConfig;
+        serviceConfig = nodeSpecServiceConfig    nodeSpec;
+        service       = nodeServiceConfigService serviceConfig;
       in {
-        inherit nodeSpec nodeServiceConfig nodeService;
+        nodeSpec = {
+          value = nodeSpec;
+          JSON  = runJq "node-spec-${name}.json"
+                    ''--null-input --sort-keys
+                      --argjson x '${__toJSON nodeSpec}'
+                    '' "$x";
+        };
+
+        serviceConfig = {
+          value = serviceConfig;
+          JSON  = runJq "node-service-config-${name}.json"
+                    ''--null-input --sort-keys
+                      --argjson x '${__toJSON serviceConfig}'
+                    '' "$x";
+        };
+
+        service = {
+          value = service;
+          JSON  = runJq "node-service-${name}.json"
+                    ''--null-input --sort-keys
+                      --argjson x '${__toJSON service}'
+                    '' "$x";
+        };
+
+        nodeConfig = {
+          value = service.nodeConfig;
+          JSON  = runJq "node-config-${name}.json"
+                    ''--null-input --sort-keys
+                      --argjson x '${__toJSON service.nodeConfig}'
+                    '' "$x";
+        };
 
         startupScript =
-          pkgs.writeScript "cardano-node"
+          pkgs.writeScript "startup-${name}.sh"
             ''
             #!${pkgs.stdenv.shell}
-            ${nodeService.script}
+
+            ${service.script}
             '';
       })
-    nodeSpecs;
+    profile.node-specs.value;
 in
 {
-  inherit nodeSetups;
-  inherit
-    nodeIndexToNodePort
-    nodeIndexToEkgPort
-    nodeIndexToPrometheusPort;
+  inherit node-services;
 }

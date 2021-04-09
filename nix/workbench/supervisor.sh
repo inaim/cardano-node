@@ -15,5 +15,7 @@ case "${op}" in
           true;;
     is-running )
         test "$(netstat -pltn 2>/dev/null | grep ':9001 ' | wc -l)" != "0";;
+
+
     * ) usage_supervisor;; esac
 }

@@ -11,7 +11,7 @@ local op=${1:-list}; test $# -gt 0 && shift
 
 case "${op}" in
     list )
-        (test -d "$global_ctl_runsdir" && cd "$global_ctl_runsdir" && find . -type d)
+        (test -d "$global_runsdir" && cd "$global_runsdir" && find . -type d)
         ;;
 
     mkname )
@@ -29,7 +29,7 @@ case "${op}" in
         local prof=$3
 
         local dir=$runsdir/$name
-        if test "$(realpath "$dir")" = test "$(realpath "$global_ctl_runsdir")" -o "$name" = '.'
+        if test "$(realpath "$dir")" = test "$(realpath "$global_runsdir")" -o "$name" = '.'
         then fatal "bad, bad tag '$name'"; fi
         ;;
 

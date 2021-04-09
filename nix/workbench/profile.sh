@@ -5,7 +5,7 @@ usage_profile() {
     compose NAME..        Create a profile composed from named profiles
     get NAME              Get contents of named profile
     describe NAME         Print a human description of a profile
-    node-specs NAME PORT-BASE STAGGER-PORTS
+    node-specs PROFILE-JSON PORT-BASE STAGGER-PORTS
                           Print node specs JSON for the given profile;
                             If STAGGER-PORTS is true, the assigned ports will
                             be incrementally distinc for each node spec
@@ -27,7 +27,7 @@ case "${op}" in
         ;;
 
     all-profiles | generate-all | all )
-        (cd "$global_ctl_basedir";
+        (cd "$global_basedir/profiles";
 
          jq --argjson eras "$(to_jsonlist ${global_profile_eras[*]})" --null-input '
            include "profiles";
@@ -49,7 +49,7 @@ case "${op}" in
           ';;
 
     get )
-        local usage="USAGE: ctl profile get NAME"
+        local usage="USAGE: wb profile get NAME"
         local name=${1:?$usage}
 
         profile generate-all |
@@ -57,11 +57,11 @@ case "${op}" in
         ;;
 
     describe )
-        local usage="USAGE: ctl profile describe NAME"
+        local usage="USAGE: wb profile describe NAME"
         local name=${1:?$usage}
 
         profile get $name |
-        (cd "$global_ctl_basedir";
+        (cd "$global_basedir/profiles";
 
          jq '
           include "derived";
@@ -69,16 +69,16 @@ case "${op}" in
           ' --raw-output);;
 
     node-specs )
-        local usage="USAGE: ctl profile node-specs NAME PORT-BASE STAGGER-PORTS"
-        local name=${1:?$usage}
+        local usage="USAGE: wb profile node-specs PROFILE-JSON PORT-BASE STAGGER-PORTS"
+        local profile_json=${1:?$usage}
         local port_base=${2:?$usage}
         local stagger_ports=${3:?$usage}
 
         args=(
+            "$profile_json"
             --argjson port_base     $port_base
             --argjson stagger_ports $stagger_ports
         )
-        profile get $name |
         jq '. as $prof
            | $prof.composition.n_bft_hosts  as $n_bfts
            | $prof.composition.n_pool_hosts as $n_pools

@@ -1,6 +1,7 @@
 usage_topology() {
      usage "topology" "Topology generation" <<EOF
-    make PROFILE OUTDIR   Generate the full cluster topology, including:
+    make PROFILE-JSON OUTDIR
+                          Generate the full cluster topology, including:
                             - the Nixops/'cardano-ops' style topology
                             - the .dot and .pdf rendering
 
@@ -21,15 +22,15 @@ local op=${1:---help)}; shift
 
 case "${op}" in
     make )
-        local usage="USAGE:  ctl topology make PROFILE OUTDIR"
-        local profile=${1:?$usage}
+        local usage="USAGE:  wb topology make PROFILE OUTDIR"
+        local profile_json=${1:?$usage}
         local outdir=${2:?$usage}
 
-        local prof=$(profile get $profile)
-        local n_hosts=$(jq .composition.n_hosts <<<$prof)
+        local n_hosts=$(jq .composition.n_hosts "$profile_json")
 
         ## 0. Generate:
         #
+        mkdir -p                 "$outdir"
         args=( --topology-output "$outdir"/topology-nixops.json
                --dot-output      "$outdir"/topology.dot
                --size             $n_hosts
@@ -37,9 +38,9 @@ case "${op}" in
                $(jq '.composition.locations
                     | map("--loc " + .)
                     | join(" ")
-                    ' --raw-output <<<$prof)
+                    ' --raw-output "$profile_json")
              )
-        topology "${args[@]}"
+        cardano-topology "${args[@]}"
 
         ## 1. Render PDF:
         #
@@ -48,7 +49,7 @@ case "${op}" in
 
         ## 2. Patch the nixops topology with the density information:
         #
-        jq --argjson prof "$prof" '
+        jq --slurpfile prof "$profile_json" '
            def nixops_topology_set_pool_density($topo; $density):
               $topo *
               { coreNodes:
@@ -64,13 +65,13 @@ case "${op}" in
                 )
               };
 
-           nixops_topology_set_pool_density(.; $prof.dense_pool_density)
+           nixops_topology_set_pool_density(.; $prof[0].dense_pool_density)
            '   "$outdir"/topology-nixops.json |
         sponge "$outdir"/topology-nixops.json
         ;;
 
     for-local-node )
-        local usage="USAGE:  ctl topology for-local-node TOPO-DIR PORT-BASE N"
+        local usage="USAGE:  wb topology for-local-node TOPO-DIR PORT-BASE N"
         local topo_dir=${1:?$usage}
         local port_base=${2:?$usage}
         local i=${3:?$usage}
@@ -97,7 +98,7 @@ case "${op}" in
            ' "${args[@]}";;
 
     for-local-observer )
-        local usage="USAGE:  ctl topology for-local-observer PROFILE TOPO-DIR PORT-BASE"
+        local usage="USAGE:  wb topology for-local-observer PROFILE TOPO-DIR PORT-BASE"
         local profile=${1:?$usage}
         local topo_dir=${2:?$usage}
         local port_base=${3:?$usage}

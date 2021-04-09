@@ -7,12 +7,9 @@
 , basePort
 ##
 , profile
-, profileJSON
-## As derived from profile:
-, topologyNixopsFile
 }:
 
-with profile;
+with profile.value;
 
 let
   decideSystemStart =
@@ -139,7 +136,7 @@ let
             mkdir -p "${path}"/node-keys/cold
 
             #### cold keys (do not copy to production system)
-            if   jqtest ".genesis.dense_pool_density > 1" ${profileJSON} &&
+            if   jqtest ".genesis.dense_pool_density > 1" ${profile.JSON} &&
                  jqtest ".[\"$id\"]  > 1" <<<$ids_pool_map
             then ## Dense/bulk pool
                echo "genesis:  bulk pool $did -> node-$id"
@@ -183,14 +180,14 @@ let
               sed 's_\\__g; s_^"__; s_"$__'
     }
 
-    ids_pool_map=$(topology_id_pool_density_map "${topologyNixopsFile}")
+    ids_pool_map=$(topology_id_pool_density_map "${profile.topology.files}/topology-nixops.json")
     echo "genesis: id-pool map:  $ids_pool_map"
 
     cli genesis create --genesis-dir ${path}/ \
         ${toString cli_args.createSpec}
 
-    jq -r --argjson genesisVerb '${__toJSON genesis.verbatim}' '
-        . * $genesisVerb
+    jq --slurpfile profile ${profile.JSON} --raw-output '
+        . * $profile[0].genesis.verbatim
         '  ${path}/genesis.spec.json |
     sponge ${path}/genesis.spec.json
     '';
@@ -199,9 +196,13 @@ let
     ''
     ## Determine the genesis cache entry:
 
-    profile_json='${__toJSON profile}'
+    # 1. Select genesis params that affect the cache:
 
-    genesis_cache_params=$(jq '.genesis * .composition |
+    args=(--slurpfile profile ${profile.JSON}
+          --sort-keys
+          --null-input
+         )
+    genesis_cache_params=$(jq '$profile[0].genesis * $profile[0].composition |
                               del(.active_slots_coeff) |
                               del(.byron) |
                               del(.epoch_length) |
@@ -213,15 +214,25 @@ let
                               del(.parameter_k) |
                               del(.slot_duration) |
                               del(.with_observer)
-                             ' --sort-keys <<<$profile_json)
+                             ' ''${args[*]})
 
-    genesis_params_hash=$(echo "$genesis_cache_params" | sha1sum | cut -c-7)
-    genesis_cache_id=$(jq <<<$profile_json \
-       '"k\(.composition.n_pools)-d\(.composition.dense_pool_density)-\(.genesis.delegators / 1000)kD-\(.genesis.utxo / 1000)kU-\($params_hash)"
-       ' --arg params_hash "$genesis_params_hash" --raw-output)
+    # 2. Compute the cache id:
+
+    args=(--arg params_hash $(echo "$genesis_cache_params" | sha1sum | cut -c-7)
+          --raw-output
+         )
+    genesis_cache_id=$(jq '
+      [ "k\(.composition.n_pools)"
+      , "d\(.composition.dense_pool_density)"
+      , "\(.genesis.delegators / 1000)kD"
+      , "\(.genesis.utxo / 1000)kU"
+      , "\($params_hash)"
+      ]
+      | join("-")
+      ' ''${args[*]} ${profile.JSON})
     eval genesis_cache_path="${genesisCacheDir}/$genesis_cache_id"
 
-    ## Handle genesis cache hit/miss:
+    # 3. Handle genesis cache hit/miss:
 
     if test -f "$genesis_cache_path"/cache.params.id
     then genesis_cache_hit=t; genesis_cache_hit_desc='hit'
@@ -265,7 +276,7 @@ let
     rm -f                                     ${stateDir}/shelley
     ln -s "$(realpath "$genesis_cache_path")" ${stateDir}/shelley
 
-    ${updateGenesisCacheEntry "${stateDir}/shelley/genesis.json" profileJSON}
+    ${updateGenesisCacheEntry "${stateDir}/shelley/genesis.json" profile.JSON}
     '';
 
   updateGenesisCacheEntry =

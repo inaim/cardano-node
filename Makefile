@@ -34,10 +34,10 @@ test-chairmans-cluster:
 	@scripts/chairmans-cluster/cluster-test.sh
 
 profiles:
-	@./nix/supervisord-cluster/ctl dump-profiles
+	@./nix/workbench/wb dump-profiles
 
 profile-names:
-	@./nix/supervisord-cluster/ctl profile-names
+	@./nix/workbench/wb profile-names
 
 CLUSTER_PROFILE    = default-mary
 CLUSTER_ARGS_EXTRA =

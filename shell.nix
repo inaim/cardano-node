@@ -43,7 +43,7 @@ let
       sqlite-interactive
       tmux
       pkgs.git
-      clusterCabal.ctl
+      pkgs.workbench
     ]
     ## Local cluster not available on Darwin,
     ## because psmisc fails to build on Big Sur.
@@ -63,7 +63,7 @@ let
 
       function atexit() {
           ${lib.optionalString autoStartCluster ''
-          if ctl supervisor is-running;
+          if wb supervisor is-running;
           then echo "Stopping cluster (because 'auto-start-cluster' implies this):"
                stop-cluster
           fi''}
