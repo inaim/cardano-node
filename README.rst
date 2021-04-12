@@ -105,7 +105,7 @@ The general synopsis is as follows:
 
 * ``--port`` - Specify which port to assign to the node.
 
-* ``--config`` - Specify the filepath to the config ``.yaml`` file. This file is responsible for all the other node's required settings. See examples in ``configuration`` (e.g. `config-0.yaml <configuration/defaults/liveview/config-0.yaml>`_).
+* ``--config`` - Specify the filepath to the config ``.yaml`` file. This file is responsible for all the other node's required settings. See examples in ``configuration`` (e.g. `config-0.yaml <configuration/defaults/simpleview/config-0.yaml>`_).
 
 * ``--validate-db`` - Flag to revalidate all on-disk database files
 
@@ -150,8 +150,7 @@ The general synopsis is as follows:
 
    Usage: cardano-cli (Era based commands | Byron specific commands | Miscellaneous commands)
 
-> NOTE: the exact invocation command depends on the environment.  If you have only built ``cardano-cli``, without installing it, then you have to prepend ``cabal run -- ``
-before ``cardano-cli``.  We henceforth assume that the necessary environment-specific adjustment has been made, so we only mention ``cardano-cli``.
+> NOTE: the exact invocation command depends on the environment. If you've built ``cardano-cli`` but did not install it, you should instead use ``cabal run -- cardano-cli``. We henceforth assume that the necessary environment-specific adjustment has been made, so we only mention ``cardano-cli``.
 
 The subcommands are subdivided in groups, and their full list can be seen in the output of ``cardano-cli --help``.
 
@@ -263,7 +262,7 @@ The easiest way to create a transaction is via the ``scripts/benchmarking/issue-
 
 ``./scripts/benchmarking/issue-genesis-utxo-expenditure.sh transaction_file``
 
-NB: This by default creates a transaction based on ``configuration/defaults/liveview/config-0.yaml``
+NB: This by default creates a transaction based on ``configuration/defaults/simpleview/config-0.yaml``
 
 If you do not have a ``genesis_file`` you can run ``scripts/benchmarking/genesis.sh`` which will create an example ``genesis_file`` for you.
 The script ``scripts/benchmarking/issue-genesis-utxo-expenditure.sh`` has defaults for all the requirements of the ``issue-genesis-utxo-expenditure`` command.
@@ -275,7 +274,7 @@ The ``submit-tx`` subcommand provides the option of submitting a pre-signed
 transaction, in its raw wire format (see GenTx for Byron transactions).
 
 The canned ``scripts/benchmarking/submit-tx.sh`` script will submit the supplied transaction to a testnet
-launched by ``scripts/benchmarking/shelley-testnet-liveview.sh`` script.
+launched by ``scripts/benchmarking/shelley-testnet-simpleview.sh`` script.
 
 Issuing UTxO expenditure (genesis and regular)
 ----------------------------------------------
@@ -381,7 +380,7 @@ Byron vote creation:
 
    cabal exec cardano-cli -- byron governance create-proposal-vote
                           (--mainnet | --testnet-magic NATURAL)
-                          --signing-key configuration/defaults/liveview/genesis/delegate-keys.000.key
+                          --signing-key configuration/defaults/simpleview/genesis/delegate-keys.000.key
                           --proposal-filepath ProtocolUpdateProposalFile
                           --vote-yes
                           --output-filepath UpdateProposalVoteFile

@@ -6,11 +6,11 @@
 
 prebuild 'cardano-cli' 'cardano-cli'
 
-setup_genesis_for_config 'liveview'
+setup_genesis_for_config 'simpleview'
 
 TX=${1?scripts.issue-genesis-utxo-expenditure.Error: no tx name specified}
 
-CONFIG="configuration/defaults/liveview/config-0.yaml"
+CONFIG="configuration/defaults/simpleview/config-0.yaml"
 from_addr="2cWKMJemoBain3UWCzSY5wZvcf8uQ2MAaSy8hedrwpqsbYCm4QnBgPn3cEH7KF3X7DKoZ"
 from_key="${configuration_root}/genesis/delegate-keys.000.key"
 default_to_key="${configuration_root}/genesis/delegate-keys.001.key"
